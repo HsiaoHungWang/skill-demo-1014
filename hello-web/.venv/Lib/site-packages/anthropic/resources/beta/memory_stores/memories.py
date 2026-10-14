@@ -1,0 +1,1028 @@
+from __future__ import annotations
+
+from typing import Any, List, Optional, cast
+from itertools import chain
+
+import httpx2
+
+from ...._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
+from ...._utils import is_given, path_template, strip_not_given
+from ...._compat import cached_property
+from ...._resource import SyncAPIResource, AsyncAPIResource
+from ...._response import (
+    to_raw_response_wrapper,
+    to_streamed_response_wrapper,
+    async_to_raw_response_wrapper,
+    async_to_streamed_response_wrapper,
+)
+from ....pagination import SyncPageCursor, AsyncPageCursor
+from ...._base_client import AsyncPaginator, make_request_options
+from ....types.beta.memory_stores import (
+    BetaManagedAgentsMemoryView,
+)
+from ....types.anthropic_beta_param import AnthropicBetaParam
+from ....types.beta.memory_stores.beta_managed_agents_memory import BetaManagedAgentsMemory
+from ....types.beta.memory_stores.beta_managed_agents_memory_view import BetaManagedAgentsMemoryView
+from ....types.beta.memory_stores.beta_managed_agents_deleted_memory import BetaManagedAgentsDeletedMemory
+from ....types.beta.memory_stores.beta_managed_agents_memory_list_item import BetaManagedAgentsMemoryListItem
+from ....types.beta.memory_stores.beta_managed_agents_precondition_param import BetaManagedAgentsPreconditionParam
+
+__all__ = ["Memories", "AsyncMemories"]
+
+
+class Memories(SyncAPIResource):
+    @cached_property
+    def with_raw_response(self) -> MemoriesWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#accessing-raw-response-data-eg-headers
+        """
+        return MemoriesWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> MemoriesWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#with_streaming_response
+        """
+        return MemoriesWithStreamingResponse(self)
+
+    def create(
+        self,
+        memory_store_id: str,
+        *,
+        content: Optional[str],
+        path: str,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsMemory:
+        """
+        Create a memory
+
+        Args:
+          memory_store_id: The ID of the memory store to create the memory in (`memstore_...`).
+
+          content: UTF-8 text content for the new memory. Maximum 100 kB (102,400 bytes). Required;
+              pass `""` explicitly to create an empty memory.
+
+          path: Hierarchical path for the new memory, e.g. `/projects/foo/notes.md`. Must start
+              with `/`, contain at least one non-empty segment, and be at most 1,024 bytes.
+              Must not contain empty segments, `.` or `..` segments, control or format
+              characters, or the Unicode line and paragraph separators (U+2028, U+2029), and
+              must be NFC-normalized. Paths are case-sensitive.
+
+          view: Selects which projection of a `memory` or `memory_version` the server returns.
+              `basic` returns the object with `content` set to `null`; `full` populates
+              `content`. When omitted, the default is endpoint-specific: retrieve operations
+              default to `full`; list, create, and update operations default to `basic`.
+              Listing with `view=full` caps `limit` at 20.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return self._post(
+            path_template("/v1/memory_stores/{memory_store_id}/memories?beta=true", memory_store_id=memory_store_id),
+            body={
+                "content": content,
+                "path": path,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"view": view},
+            ),
+            cast_to=BetaManagedAgentsMemory,
+        )
+
+    def retrieve(
+        self,
+        memory_id: str,
+        *,
+        memory_store_id: str,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsMemory:
+        """
+        Retrieve a memory
+
+        Args:
+          memory_store_id: The ID of the memory store that holds the memory (`memstore_...`).
+
+          memory_id: The ID of the memory to retrieve (`mem_...`).
+
+          view: Selects which projection of a `memory` or `memory_version` the server returns.
+              `basic` returns the object with `content` set to `null`; `full` populates
+              `content`. When omitted, the default is endpoint-specific: retrieve operations
+              default to `full`; list, create, and update operations default to `basic`.
+              Listing with `view=full` caps `limit` at 20.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        if not memory_id:
+            raise ValueError(f"Expected a non-empty value for `memory_id` but received {memory_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return self._get(
+            path_template(
+                "/v1/memory_stores/{memory_store_id}/memories/{memory_id}?beta=true",
+                memory_store_id=memory_store_id,
+                memory_id=memory_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"view": view},
+            ),
+            cast_to=BetaManagedAgentsMemory,
+        )
+
+    def update(
+        self,
+        memory_id: str,
+        *,
+        memory_store_id: str,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        content: Optional[str] | Omit = omit,
+        path: Optional[str] | Omit = omit,
+        precondition: BetaManagedAgentsPreconditionParam | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsMemory:
+        """
+        Update a memory
+
+        Args:
+          memory_store_id: The ID of the memory store that holds the memory (`memstore_...`).
+
+          memory_id: The ID of the memory to update (`mem_...`).
+
+          view: Selects which projection of a `memory` or `memory_version` the server returns.
+              `basic` returns the object with `content` set to `null`; `full` populates
+              `content`. When omitted, the default is endpoint-specific: retrieve operations
+              default to `full`; list, create, and update operations default to `basic`.
+              Listing with `view=full` caps `limit` at 20.
+
+          content: New UTF-8 text content for the memory. Maximum 100 kB (102,400 bytes). Omit to
+              leave the content unchanged (e.g., for a rename-only update).
+
+          path: New path for the memory (a rename). Must start with `/`, contain at least one
+              non-empty segment, and be at most 1,024 bytes. Must not contain empty segments,
+              `.` or `..` segments, control or format characters, or the Unicode line and
+              paragraph separators (U+2028, U+2029), and must be NFC-normalized. Paths are
+              case-sensitive. The memory's `id` is preserved across renames. Omit to leave the
+              path unchanged.
+
+          precondition: Optional optimistic-concurrency precondition. When supplied, the update applies
+              only if the memory's current state matches; on mismatch the request returns
+              `memory_precondition_failed_error` (HTTP 409). When omitted, the update is
+              unconditional.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        if not memory_id:
+            raise ValueError(f"Expected a non-empty value for `memory_id` but received {memory_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return self._post(
+            path_template(
+                "/v1/memory_stores/{memory_store_id}/memories/{memory_id}?beta=true",
+                memory_store_id=memory_store_id,
+                memory_id=memory_id,
+            ),
+            body={
+                "content": content,
+                "path": path,
+                "precondition": precondition,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"view": view},
+            ),
+            cast_to=BetaManagedAgentsMemory,
+        )
+
+    def list(
+        self,
+        memory_store_id: str,
+        *,
+        depth: int | Omit = omit,
+        limit: int | Omit = omit,
+        page: str | Omit = omit,
+        path_prefix: str | Omit = omit,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> SyncPageCursor[BetaManagedAgentsMemoryListItem]:
+        """
+        List memories
+
+        Args:
+          memory_store_id: The ID of the memory store to list memories from (`memstore_...`).
+
+          depth: `0` (or omitted) returns all descendants below `path_prefix` (recursive). `1`
+              returns immediate children only; deeper entries roll up as `memory_prefix`
+              items. `depth=1` behaves like `ls`; omitting `depth` behaves like `find`.
+
+          limit: Maximum number of items to return per page. Must be between 1 and 100. Defaults
+              to 20 when omitted. Capped at 20 when `view=full`. Both `memory` and
+              `memory_prefix` items count toward the limit.
+
+          page: Opaque pagination cursor (a `page_...` value). Pass the `next_page` value from a
+              previous response to fetch the next page; omit for the first page.
+
+          path_prefix: Optional path prefix filter. Must end with `/` (segment-aligned), e.g.,
+              `/notes/`. This value appears in request URLs. Do not include secrets or
+              personally identifiable information.
+
+          view: Which projection of each `memory` to return. Defaults to `basic` (content
+              omitted). `full` populates `content` on each item and caps `limit` at 20; use
+              this as the bulk-read path for export and sync.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return self._get_api_list(
+            path_template("/v1/memory_stores/{memory_store_id}/memories?beta=true", memory_store_id=memory_store_id),
+            page=SyncPageCursor[BetaManagedAgentsMemoryListItem],
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={
+                    "depth": depth,
+                    "limit": limit,
+                    "page": page,
+                    "path_prefix": path_prefix,
+                    "view": view,
+                },
+            ),
+            model=cast(
+                Any, BetaManagedAgentsMemoryListItem
+            ),  # Union types cannot be passed in as arguments in the type system
+        )
+
+    def delete(
+        self,
+        memory_id: str,
+        *,
+        memory_store_id: str,
+        expected_content_sha256: str | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsDeletedMemory:
+        """
+        Delete a memory
+
+        Args:
+          memory_store_id: The ID of the memory store that holds the memory (`memstore_...`).
+
+          memory_id: The ID of the memory to delete (`mem_...`).
+
+          expected_content_sha256: Delete the memory only if its current `content_sha256` equals this value, given
+              as 64 lowercase hexadecimal characters. Omit it to delete unconditionally.
+
+              If the hashes differ, the request fails with HTTP status 409 and nothing is
+              deleted.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        if not memory_id:
+            raise ValueError(f"Expected a non-empty value for `memory_id` but received {memory_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return self._delete(
+            path_template(
+                "/v1/memory_stores/{memory_store_id}/memories/{memory_id}?beta=true",
+                memory_store_id=memory_store_id,
+                memory_id=memory_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"expected_content_sha256": expected_content_sha256},
+            ),
+            cast_to=BetaManagedAgentsDeletedMemory,
+        )
+
+
+class AsyncMemories(AsyncAPIResource):
+    @cached_property
+    def with_raw_response(self) -> AsyncMemoriesWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncMemoriesWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncMemoriesWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#with_streaming_response
+        """
+        return AsyncMemoriesWithStreamingResponse(self)
+
+    async def create(
+        self,
+        memory_store_id: str,
+        *,
+        content: Optional[str],
+        path: str,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsMemory:
+        """
+        Create a memory
+
+        Args:
+          memory_store_id: The ID of the memory store to create the memory in (`memstore_...`).
+
+          content: UTF-8 text content for the new memory. Maximum 100 kB (102,400 bytes). Required;
+              pass `""` explicitly to create an empty memory.
+
+          path: Hierarchical path for the new memory, e.g. `/projects/foo/notes.md`. Must start
+              with `/`, contain at least one non-empty segment, and be at most 1,024 bytes.
+              Must not contain empty segments, `.` or `..` segments, control or format
+              characters, or the Unicode line and paragraph separators (U+2028, U+2029), and
+              must be NFC-normalized. Paths are case-sensitive.
+
+          view: Selects which projection of a `memory` or `memory_version` the server returns.
+              `basic` returns the object with `content` set to `null`; `full` populates
+              `content`. When omitted, the default is endpoint-specific: retrieve operations
+              default to `full`; list, create, and update operations default to `basic`.
+              Listing with `view=full` caps `limit` at 20.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return await self._post(
+            path_template("/v1/memory_stores/{memory_store_id}/memories?beta=true", memory_store_id=memory_store_id),
+            body={
+                "content": content,
+                "path": path,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"view": view},
+            ),
+            cast_to=BetaManagedAgentsMemory,
+        )
+
+    async def retrieve(
+        self,
+        memory_id: str,
+        *,
+        memory_store_id: str,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsMemory:
+        """
+        Retrieve a memory
+
+        Args:
+          memory_store_id: The ID of the memory store that holds the memory (`memstore_...`).
+
+          memory_id: The ID of the memory to retrieve (`mem_...`).
+
+          view: Selects which projection of a `memory` or `memory_version` the server returns.
+              `basic` returns the object with `content` set to `null`; `full` populates
+              `content`. When omitted, the default is endpoint-specific: retrieve operations
+              default to `full`; list, create, and update operations default to `basic`.
+              Listing with `view=full` caps `limit` at 20.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        if not memory_id:
+            raise ValueError(f"Expected a non-empty value for `memory_id` but received {memory_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return await self._get(
+            path_template(
+                "/v1/memory_stores/{memory_store_id}/memories/{memory_id}?beta=true",
+                memory_store_id=memory_store_id,
+                memory_id=memory_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"view": view},
+            ),
+            cast_to=BetaManagedAgentsMemory,
+        )
+
+    async def update(
+        self,
+        memory_id: str,
+        *,
+        memory_store_id: str,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        content: Optional[str] | Omit = omit,
+        path: Optional[str] | Omit = omit,
+        precondition: BetaManagedAgentsPreconditionParam | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsMemory:
+        """
+        Update a memory
+
+        Args:
+          memory_store_id: The ID of the memory store that holds the memory (`memstore_...`).
+
+          memory_id: The ID of the memory to update (`mem_...`).
+
+          view: Selects which projection of a `memory` or `memory_version` the server returns.
+              `basic` returns the object with `content` set to `null`; `full` populates
+              `content`. When omitted, the default is endpoint-specific: retrieve operations
+              default to `full`; list, create, and update operations default to `basic`.
+              Listing with `view=full` caps `limit` at 20.
+
+          content: New UTF-8 text content for the memory. Maximum 100 kB (102,400 bytes). Omit to
+              leave the content unchanged (e.g., for a rename-only update).
+
+          path: New path for the memory (a rename). Must start with `/`, contain at least one
+              non-empty segment, and be at most 1,024 bytes. Must not contain empty segments,
+              `.` or `..` segments, control or format characters, or the Unicode line and
+              paragraph separators (U+2028, U+2029), and must be NFC-normalized. Paths are
+              case-sensitive. The memory's `id` is preserved across renames. Omit to leave the
+              path unchanged.
+
+          precondition: Optional optimistic-concurrency precondition. When supplied, the update applies
+              only if the memory's current state matches; on mismatch the request returns
+              `memory_precondition_failed_error` (HTTP 409). When omitted, the update is
+              unconditional.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        if not memory_id:
+            raise ValueError(f"Expected a non-empty value for `memory_id` but received {memory_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return await self._post(
+            path_template(
+                "/v1/memory_stores/{memory_store_id}/memories/{memory_id}?beta=true",
+                memory_store_id=memory_store_id,
+                memory_id=memory_id,
+            ),
+            body={
+                "content": content,
+                "path": path,
+                "precondition": precondition,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"view": view},
+            ),
+            cast_to=BetaManagedAgentsMemory,
+        )
+
+    def list(
+        self,
+        memory_store_id: str,
+        *,
+        depth: int | Omit = omit,
+        limit: int | Omit = omit,
+        page: str | Omit = omit,
+        path_prefix: str | Omit = omit,
+        view: BetaManagedAgentsMemoryView | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> AsyncPaginator[BetaManagedAgentsMemoryListItem, AsyncPageCursor[BetaManagedAgentsMemoryListItem]]:
+        """
+        List memories
+
+        Args:
+          memory_store_id: The ID of the memory store to list memories from (`memstore_...`).
+
+          depth: `0` (or omitted) returns all descendants below `path_prefix` (recursive). `1`
+              returns immediate children only; deeper entries roll up as `memory_prefix`
+              items. `depth=1` behaves like `ls`; omitting `depth` behaves like `find`.
+
+          limit: Maximum number of items to return per page. Must be between 1 and 100. Defaults
+              to 20 when omitted. Capped at 20 when `view=full`. Both `memory` and
+              `memory_prefix` items count toward the limit.
+
+          page: Opaque pagination cursor (a `page_...` value). Pass the `next_page` value from a
+              previous response to fetch the next page; omit for the first page.
+
+          path_prefix: Optional path prefix filter. Must end with `/` (segment-aligned), e.g.,
+              `/notes/`. This value appears in request URLs. Do not include secrets or
+              personally identifiable information.
+
+          view: Which projection of each `memory` to return. Defaults to `basic` (content
+              omitted). `full` populates `content` on each item and caps `limit` at 20; use
+              this as the bulk-read path for export and sync.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return self._get_api_list(
+            path_template("/v1/memory_stores/{memory_store_id}/memories?beta=true", memory_store_id=memory_store_id),
+            page=AsyncPageCursor[BetaManagedAgentsMemoryListItem],
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={
+                    "depth": depth,
+                    "limit": limit,
+                    "page": page,
+                    "path_prefix": path_prefix,
+                    "view": view,
+                },
+            ),
+            model=cast(
+                Any, BetaManagedAgentsMemoryListItem
+            ),  # Union types cannot be passed in as arguments in the type system
+        )
+
+    async def delete(
+        self,
+        memory_id: str,
+        *,
+        memory_store_id: str,
+        expected_content_sha256: str | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsDeletedMemory:
+        """
+        Delete a memory
+
+        Args:
+          memory_store_id: The ID of the memory store that holds the memory (`memstore_...`).
+
+          memory_id: The ID of the memory to delete (`mem_...`).
+
+          expected_content_sha256: Delete the memory only if its current `content_sha256` equals this value, given
+              as 64 lowercase hexadecimal characters. Omit it to delete unconditionally.
+
+              If the hashes differ, the request fails with HTTP status 409 and nothing is
+              deleted.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not memory_store_id:
+            raise ValueError(f"Expected a non-empty value for `memory_store_id` but received {memory_store_id!r}")
+        if not memory_id:
+            raise ValueError(f"Expected a non-empty value for `memory_id` but received {memory_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["agent-memory-2026-07-22"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "agent-memory-2026-07-22", **(extra_headers or {})}
+        return await self._delete(
+            path_template(
+                "/v1/memory_stores/{memory_store_id}/memories/{memory_id}?beta=true",
+                memory_store_id=memory_store_id,
+                memory_id=memory_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={"expected_content_sha256": expected_content_sha256},
+            ),
+            cast_to=BetaManagedAgentsDeletedMemory,
+        )
+
+
+class MemoriesWithRawResponse:
+    def __init__(self, memories: Memories) -> None:
+        self._memories = memories
+
+        self.create = to_raw_response_wrapper(
+            memories.create,
+        )
+        self.retrieve = to_raw_response_wrapper(
+            memories.retrieve,
+        )
+        self.update = to_raw_response_wrapper(
+            memories.update,
+        )
+        self.list = to_raw_response_wrapper(
+            memories.list,
+        )
+        self.delete = to_raw_response_wrapper(
+            memories.delete,
+        )
+
+
+class AsyncMemoriesWithRawResponse:
+    def __init__(self, memories: AsyncMemories) -> None:
+        self._memories = memories
+
+        self.create = async_to_raw_response_wrapper(
+            memories.create,
+        )
+        self.retrieve = async_to_raw_response_wrapper(
+            memories.retrieve,
+        )
+        self.update = async_to_raw_response_wrapper(
+            memories.update,
+        )
+        self.list = async_to_raw_response_wrapper(
+            memories.list,
+        )
+        self.delete = async_to_raw_response_wrapper(
+            memories.delete,
+        )
+
+
+class MemoriesWithStreamingResponse:
+    def __init__(self, memories: Memories) -> None:
+        self._memories = memories
+
+        self.create = to_streamed_response_wrapper(
+            memories.create,
+        )
+        self.retrieve = to_streamed_response_wrapper(
+            memories.retrieve,
+        )
+        self.update = to_streamed_response_wrapper(
+            memories.update,
+        )
+        self.list = to_streamed_response_wrapper(
+            memories.list,
+        )
+        self.delete = to_streamed_response_wrapper(
+            memories.delete,
+        )
+
+
+class AsyncMemoriesWithStreamingResponse:
+    def __init__(self, memories: AsyncMemories) -> None:
+        self._memories = memories
+
+        self.create = async_to_streamed_response_wrapper(
+            memories.create,
+        )
+        self.retrieve = async_to_streamed_response_wrapper(
+            memories.retrieve,
+        )
+        self.update = async_to_streamed_response_wrapper(
+            memories.update,
+        )
+        self.list = async_to_streamed_response_wrapper(
+            memories.list,
+        )
+        self.delete = async_to_streamed_response_wrapper(
+            memories.delete,
+        )

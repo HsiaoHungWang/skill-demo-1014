@@ -1,0 +1,14 @@
+from typing_extensions import Literal
+
+from ..._models import BaseModel
+
+__all__ = ["BetaManagedAgentsDeletedVault"]
+
+
+class BetaManagedAgentsDeletedVault(BaseModel):
+    """Confirmation of a deleted vault."""
+
+    id: str
+    """Unique identifier of the deleted vault."""
+
+    type: Literal["vault_deleted"]

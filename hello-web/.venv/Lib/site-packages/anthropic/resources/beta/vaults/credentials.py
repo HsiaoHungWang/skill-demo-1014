@@ -1,0 +1,1212 @@
+from __future__ import annotations
+
+from typing import Dict, List, Optional
+from itertools import chain
+
+import httpx2
+
+from ...._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
+from ...._utils import is_given, path_template, strip_not_given
+from ...._compat import cached_property
+from ...._resource import SyncAPIResource, AsyncAPIResource
+from ...._response import (
+    to_raw_response_wrapper,
+    to_streamed_response_wrapper,
+    async_to_raw_response_wrapper,
+    async_to_streamed_response_wrapper,
+)
+from ....pagination import SyncPageCursor, AsyncPageCursor
+from ...._base_client import AsyncPaginator, make_request_options
+from ....types.beta.vaults import credential_create_params, credential_update_params
+from ....types.anthropic_beta_param import AnthropicBetaParam
+from ....types.beta.vaults.beta_managed_agents_credential import BetaManagedAgentsCredential
+from ....types.beta.vaults.beta_managed_agents_deleted_credential import BetaManagedAgentsDeletedCredential
+from ....types.beta.vaults.beta_managed_agents_credential_validation import BetaManagedAgentsCredentialValidation
+
+__all__ = ["Credentials", "AsyncCredentials"]
+
+
+class Credentials(SyncAPIResource):
+    @cached_property
+    def with_raw_response(self) -> CredentialsWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#accessing-raw-response-data-eg-headers
+        """
+        return CredentialsWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> CredentialsWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#with_streaming_response
+        """
+        return CredentialsWithStreamingResponse(self)
+
+    def create(
+        self,
+        vault_id: str,
+        *,
+        auth: credential_create_params.Auth,
+        display_name: Optional[str] | Omit = omit,
+        metadata: Dict[str, str] | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Create Credential
+
+        Args:
+          vault_id: Identifier of the vault to create the credential in.
+
+          auth: Authentication configuration for the credential.
+
+          display_name: Human-readable name for the credential. Up to 255 characters.
+
+          metadata: Arbitrary key-value metadata to attach to the credential. Maximum 16 pairs, keys
+              up to 64 chars, values up to 512 chars.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._post(
+            path_template("/v1/vaults/{vault_id}/credentials?beta=true", vault_id=vault_id),
+            body={
+                "auth": auth,
+                "display_name": display_name,
+                "metadata": metadata,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    def retrieve(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Get Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to retrieve.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._get(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    def update(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        auth: credential_update_params.Auth | Omit = omit,
+        display_name: Optional[str] | Omit = omit,
+        metadata: Optional[Dict[str, Optional[str]]] | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Update Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to update.
+
+          auth: Updated authentication configuration. The `type` is immutable; the variant sent
+              must match the stored credential's type.
+
+          display_name: Updated human-readable name for the credential. 1-255 characters.
+
+          metadata: Metadata patch. Set a key to a string to upsert it, or to null to delete it.
+              Omitted keys are preserved.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._post(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            body={
+                "auth": auth,
+                "display_name": display_name,
+                "metadata": metadata,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    def list(
+        self,
+        vault_id: str,
+        *,
+        include_archived: bool | Omit = omit,
+        limit: int | Omit = omit,
+        page: str | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> SyncPageCursor[BetaManagedAgentsCredential]:
+        """
+        List Credentials
+
+        Args:
+          vault_id: Identifier of the vault to list credentials for.
+
+          include_archived: Whether to include archived credentials in the results.
+
+          limit: Maximum number of credentials to return per page. Defaults to 20, maximum 100.
+
+          page: Opaque pagination token from a previous `list_credentials` response.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._get_api_list(
+            path_template("/v1/vaults/{vault_id}/credentials?beta=true", vault_id=vault_id),
+            page=SyncPageCursor[BetaManagedAgentsCredential],
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={
+                    "include_archived": include_archived,
+                    "limit": limit,
+                    "page": page,
+                },
+            ),
+            model=BetaManagedAgentsCredential,
+        )
+
+    def delete(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsDeletedCredential:
+        """
+        Delete Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to delete.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._delete(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsDeletedCredential,
+        )
+
+    def archive(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Archive Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to archive.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._post(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}/archive?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    def mcp_oauth_validate(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredentialValidation:
+        """
+        Validate Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to validate.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._post(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}/mcp_oauth_validate?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredentialValidation,
+        )
+
+
+class AsyncCredentials(AsyncAPIResource):
+    @cached_property
+    def with_raw_response(self) -> AsyncCredentialsWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncCredentialsWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncCredentialsWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/anthropics/anthropic-sdk-python#with_streaming_response
+        """
+        return AsyncCredentialsWithStreamingResponse(self)
+
+    async def create(
+        self,
+        vault_id: str,
+        *,
+        auth: credential_create_params.Auth,
+        display_name: Optional[str] | Omit = omit,
+        metadata: Dict[str, str] | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Create Credential
+
+        Args:
+          vault_id: Identifier of the vault to create the credential in.
+
+          auth: Authentication configuration for the credential.
+
+          display_name: Human-readable name for the credential. Up to 255 characters.
+
+          metadata: Arbitrary key-value metadata to attach to the credential. Maximum 16 pairs, keys
+              up to 64 chars, values up to 512 chars.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return await self._post(
+            path_template("/v1/vaults/{vault_id}/credentials?beta=true", vault_id=vault_id),
+            body={
+                "auth": auth,
+                "display_name": display_name,
+                "metadata": metadata,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    async def retrieve(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Get Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to retrieve.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return await self._get(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    async def update(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        auth: credential_update_params.Auth | Omit = omit,
+        display_name: Optional[str] | Omit = omit,
+        metadata: Optional[Dict[str, Optional[str]]] | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Update Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to update.
+
+          auth: Updated authentication configuration. The `type` is immutable; the variant sent
+              must match the stored credential's type.
+
+          display_name: Updated human-readable name for the credential. 1-255 characters.
+
+          metadata: Metadata patch. Set a key to a string to upsert it, or to null to delete it.
+              Omitted keys are preserved.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return await self._post(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            body={
+                "auth": auth,
+                "display_name": display_name,
+                "metadata": metadata,
+            },
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    def list(
+        self,
+        vault_id: str,
+        *,
+        include_archived: bool | Omit = omit,
+        limit: int | Omit = omit,
+        page: str | Omit = omit,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> AsyncPaginator[BetaManagedAgentsCredential, AsyncPageCursor[BetaManagedAgentsCredential]]:
+        """
+        List Credentials
+
+        Args:
+          vault_id: Identifier of the vault to list credentials for.
+
+          include_archived: Whether to include archived credentials in the results.
+
+          limit: Maximum number of credentials to return per page. Defaults to 20, maximum 100.
+
+          page: Opaque pagination token from a previous `list_credentials` response.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return self._get_api_list(
+            path_template("/v1/vaults/{vault_id}/credentials?beta=true", vault_id=vault_id),
+            page=AsyncPageCursor[BetaManagedAgentsCredential],
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                query={
+                    "include_archived": include_archived,
+                    "limit": limit,
+                    "page": page,
+                },
+            ),
+            model=BetaManagedAgentsCredential,
+        )
+
+    async def delete(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsDeletedCredential:
+        """
+        Delete Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to delete.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return await self._delete(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsDeletedCredential,
+        )
+
+    async def archive(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredential:
+        """
+        Archive Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to archive.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return await self._post(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}/archive?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredential,
+        )
+
+    async def mcp_oauth_validate(
+        self,
+        credential_id: str,
+        *,
+        vault_id: str,
+        betas: List[AnthropicBetaParam] | Omit = omit,
+        workspace_id: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx2.Timeout | None | NotGiven = not_given,
+    ) -> BetaManagedAgentsCredentialValidation:
+        """
+        Validate Credential
+
+        Args:
+          vault_id: Identifier of the vault containing the credential.
+
+          credential_id: Unique identifier of the credential to validate.
+
+          betas: Optional header to specify the beta version(s) you want to use.
+
+          workspace_id: Optional header to select the Workspace for this request. The value is a
+              Workspace ID (for example, `wrkspc_011CZkZaBF1tNoB5wlCeusgy`).
+
+              Only needed for credentials that can act on more than one Workspace. A
+              credential that belongs to a specific Workspace may omit it; if sent, it must
+              match that Workspace.
+
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+        """
+        if not vault_id:
+            raise ValueError(f"Expected a non-empty value for `vault_id` but received {vault_id!r}")
+        if not credential_id:
+            raise ValueError(f"Expected a non-empty value for `credential_id` but received {credential_id!r}")
+        extra_headers = {
+            **strip_not_given(
+                {
+                    "anthropic-beta": ",".join(chain((str(e) for e in betas), ["managed-agents-2026-04-01"]))
+                    if is_given(betas)
+                    else not_given,
+                    "anthropic-workspace-id": workspace_id,
+                }
+            ),
+            **(extra_headers or {}),
+        }
+        extra_headers = {"anthropic-beta": "managed-agents-2026-04-01", **(extra_headers or {})}
+        return await self._post(
+            path_template(
+                "/v1/vaults/{vault_id}/credentials/{credential_id}/mcp_oauth_validate?beta=true",
+                vault_id=vault_id,
+                credential_id=credential_id,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+            ),
+            cast_to=BetaManagedAgentsCredentialValidation,
+        )
+
+
+class CredentialsWithRawResponse:
+    def __init__(self, credentials: Credentials) -> None:
+        self._credentials = credentials
+
+        self.create = to_raw_response_wrapper(
+            credentials.create,
+        )
+        self.retrieve = to_raw_response_wrapper(
+            credentials.retrieve,
+        )
+        self.update = to_raw_response_wrapper(
+            credentials.update,
+        )
+        self.list = to_raw_response_wrapper(
+            credentials.list,
+        )
+        self.delete = to_raw_response_wrapper(
+            credentials.delete,
+        )
+        self.archive = to_raw_response_wrapper(
+            credentials.archive,
+        )
+        self.mcp_oauth_validate = to_raw_response_wrapper(
+            credentials.mcp_oauth_validate,
+        )
+
+
+class AsyncCredentialsWithRawResponse:
+    def __init__(self, credentials: AsyncCredentials) -> None:
+        self._credentials = credentials
+
+        self.create = async_to_raw_response_wrapper(
+            credentials.create,
+        )
+        self.retrieve = async_to_raw_response_wrapper(
+            credentials.retrieve,
+        )
+        self.update = async_to_raw_response_wrapper(
+            credentials.update,
+        )
+        self.list = async_to_raw_response_wrapper(
+            credentials.list,
+        )
+        self.delete = async_to_raw_response_wrapper(
+            credentials.delete,
+        )
+        self.archive = async_to_raw_response_wrapper(
+            credentials.archive,
+        )
+        self.mcp_oauth_validate = async_to_raw_response_wrapper(
+            credentials.mcp_oauth_validate,
+        )
+
+
+class CredentialsWithStreamingResponse:
+    def __init__(self, credentials: Credentials) -> None:
+        self._credentials = credentials
+
+        self.create = to_streamed_response_wrapper(
+            credentials.create,
+        )
+        self.retrieve = to_streamed_response_wrapper(
+            credentials.retrieve,
+        )
+        self.update = to_streamed_response_wrapper(
+            credentials.update,
+        )
+        self.list = to_streamed_response_wrapper(
+            credentials.list,
+        )
+        self.delete = to_streamed_response_wrapper(
+            credentials.delete,
+        )
+        self.archive = to_streamed_response_wrapper(
+            credentials.archive,
+        )
+        self.mcp_oauth_validate = to_streamed_response_wrapper(
+            credentials.mcp_oauth_validate,
+        )
+
+
+class AsyncCredentialsWithStreamingResponse:
+    def __init__(self, credentials: AsyncCredentials) -> None:
+        self._credentials = credentials
+
+        self.create = async_to_streamed_response_wrapper(
+            credentials.create,
+        )
+        self.retrieve = async_to_streamed_response_wrapper(
+            credentials.retrieve,
+        )
+        self.update = async_to_streamed_response_wrapper(
+            credentials.update,
+        )
+        self.list = async_to_streamed_response_wrapper(
+            credentials.list,
+        )
+        self.delete = async_to_streamed_response_wrapper(
+            credentials.delete,
+        )
+        self.archive = async_to_streamed_response_wrapper(
+            credentials.archive,
+        )
+        self.mcp_oauth_validate = async_to_streamed_response_wrapper(
+            credentials.mcp_oauth_validate,
+        )

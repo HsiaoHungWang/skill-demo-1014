@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello Skills 問候卡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="/static/vendor/marked.min.js"></script>
+<script src="/static/vendor/purify.min.js"></script>
+<style>
+  :root{--navy:#132352;--gold:#C9A227;--gold-soft:#F5ECCB;--bg:#F3F5FA;--card:#FFFFFF;--line:#DDE2EE;--muted:#5A6480;--ok:#1E7B4F;--ok-soft:#E3F3EA;--warn-soft:#FDECEC;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--navy);font-family:'Noto Sans TC',system-ui,sans-serif;font-size:15px;line-height:1.6}
+  header{background:var(--navy);color:#F3F5FA;padding:22px 32px}
+  header .eyebrow{color:var(--gold);font-size:12px;font-weight:700;letter-spacing:2px}
+  header h1{margin:4px 0 0;font-size:24px}
+  header p{margin:4px 0 0;color:#C4CCE0;font-size:14px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .pill{font-size:12px;border:1px solid #3A4B7A;border-radius:999px;padding:3px 12px;color:#DDE3F2}
+  .pill b{color:var(--gold);font-weight:700}
+  .pill.bad{border-color:#E08585;color:#F6C9C9}
+  main{max-width:1280px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px}
+  @media (max-width:900px){main{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h2{margin:0 0 4px;font-size:18px}
+  .card + .card{margin-top:20px}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+  label.field{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+  input[type=text],input[type=date],select{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;color:var(--navy);background:#fff}
+  input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{font:inherit;font-size:13px;font-weight:500;border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:999px;padding:4px 12px;cursor:pointer}
+  .chip:hover{border-color:var(--gold);background:var(--gold-soft)}
+  .switch{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:10px;cursor:pointer}
+  .switch input{accent-color:var(--navy);margin-top:5px}
+  .switch small{display:block;color:var(--muted);font-size:12.5px}
+  #postTo{margin-top:8px}
+  .actions{display:flex;gap:10px;margin-top:18px}
+  button{font:inherit;font-weight:700;border-radius:10px;padding:10px 20px;cursor:pointer;border:1px solid var(--navy)}
+  .primary{background:var(--navy);color:#F3F5FA}
+  .primary:disabled,.gold:disabled{opacity:.6;cursor:wait}
+  .ghost{background:transparent;color:var(--navy)}
+  .gold{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+  .badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:var(--navy);font-weight:700;font-size:13px;margin-right:8px}
+  .status{display:none;align-items:center;gap:10px;background:var(--gold-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+  .status.show{display:flex}
+  .spin{width:16px;height:16px;border:3px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:s 1s linear infinite;flex:none}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .error{display:none;background:var(--warn-soft);color:#8A1C1C;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+  .empty{color:var(--muted);text-align:center;padding:50px 10px}
+  .prompt{font-size:13px;color:var(--muted);background:#F8F9FC;border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 8px 8px 0;margin-bottom:14px;white-space:pre-wrap}
+  .greet{background:var(--navy);color:#F3F5FA;border-radius:16px;padding:22px 26px;white-space:pre-wrap;font-size:15.5px;line-height:1.9;position:relative;overflow:hidden}
+  .greet::before{content:"";position:absolute;inset:8px;border:1.5px solid var(--gold);border-radius:10px;pointer-events:none}
+  .extra{margin-top:12px;font-size:14px}
+  .extra:empty{display:none}
+  .confirm{display:none;margin-top:14px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:12px;padding:14px 16px}
+  .confirm p{margin:0 0 10px;font-size:14px}
+  .confirm .actions{margin-top:0}
+  .posted{display:none;margin-top:14px;background:var(--ok-soft);color:var(--ok);border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px}
+  .trace{list-style:none;margin:0;padding:0}
+  .trace li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .trace li:last-child{border-bottom:0}
+  .tag{flex:none;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;margin-top:2px}
+  .tag.skill{background:var(--gold-soft);color:#7A5F0C;border:1px solid var(--gold)}
+  .tag.mcp{background:var(--navy);color:#F3F5FA}
+  .trace code{font-family:Consolas,'Courier New',monospace;font-size:12.5px;word-break:break-all}
+  .trace .res{display:block;color:var(--muted);font-size:12px;margin-top:2px;word-break:break-all}
+  .meta{color:var(--muted);font-size:12px;margin-top:10px}
+  pre.outbox{background:#F8F9FC;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12.5px;max-height:260px;overflow:auto;white-space:pre-wrap;margin:0}
+  .turn{color:var(--muted);font-size:12.5px;text-align:center;margin:14px 0 4px;justify-content:center}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 0 28px}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">AGENT SKILLS DEMO ｜ hello-skills-mcp ＋ hello-mcp</div>
+  <h1>Hello Skills 問候卡</h1>
+  <p>網頁 → FastAPI → Claude（Skill）；Claude 要查放假日、貼留言板時，由 FastAPI 代為呼叫 hello-mcp。</p>
+  <div class="pills" id="pills"><span class="pill">連線檢查中…</span></div>
+</header>
+
+<main>
+  <div>
+    <section class="card">
+      <h2><span class="badge">1</span>問候卡設定</h2>
+      <p class="hint">這些選項會被組成一句話送給 Claude，例如「哈囉！我是小明，請用日本語幫我做一張問候卡。」</p>
+
+      <div class="row">
+        <div>
+          <label class="field" for="name">你的名字（選填）</label>
+          <input type="text" id="name" placeholder="例：小明" maxlength="30">
+        </div>
+        <div>
+          <label class="field" for="lang">語言</label>
+          <select id="lang">
+            <option>繁體中文</option><option>English</option><option>日本語</option><option>한국어</option>
+            <option>Español</option><option>Français</option><option>Tiếng Việt</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="field" for="asof">假設今天是（選填，測試用）</label>
+      <input type="date" id="asof">
+      <div class="chips">
+        <button class="chip" data-d="">今天</button>
+        <button class="chip" data-d="2026-10-09">10/9 國慶補假</button>
+        <button class="chip" data-d="2026-10-14">10/14 一般週三</button>
+        <button class="chip" data-d="2026-10-21">10/21 光復節連假前</button>
+      </div>
+
+      <label class="switch">
+        <input type="checkbox" id="useMcp" checked>
+        <span><b>連接 hello-mcp</b><small>查政府辦公日曆（含國定假日、補假）。關掉可示範退路：Skill 改用 weekend.py，卡片標示 ⚠️。</small></span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="wantPost">
+        <span><b>做好後貼到團隊留言板</b><small>寫入動作：Claude 會先給你看卡片，按「確認貼出」才會呼叫 post_card。</small></span>
+      </label>
+      <input type="text" id="postTo" placeholder="貼給誰？（預設：全體同仁）" maxlength="30" style="display:none">
+
+      <div class="actions">
+        <button class="primary" id="go">產生問候卡</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="badge">3</span>團隊留言板</h2>
+      <p class="hint" id="outboxPath">post_card 寫入的 outbox.md</p>
+      <pre class="outbox" id="outbox">（尚無內容）</pre>
+      <div class="actions"><button class="ghost" id="refresh">重新整理</button></div>
+    </section>
+  </div>
+
+  <div>
+    <section class="card">
+      <h2><span class="badge">2</span>Claude 的回覆</h2>
+      <div class="status" id="status"><div class="spin"></div><span id="statusText">Claude 正在讀取 Skill…</span></div>
+      <div class="error" id="error"></div>
+      <div id="result"><div class="empty">問候卡會顯示在這裡</div></div>
+      <div class="confirm" id="confirm">
+        <p>Claude 依 Skill 規則，先請你確認卡片內容與貼文對象。</p>
+        <div class="actions">
+          <button class="gold" id="ok">確認貼出</button>
+          <button class="ghost" id="cancel">取消</button>
+        </div>
+      </div>
+      <div class="posted" id="posted">✅ 已貼到留言板</div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <section class="card">
+      <h2>執行軌跡</h2>
+      <p class="hint"><span class="tag skill">Skill</span> 在 Claude 容器裡執行 scripts、讀 references　<span class="tag mcp">MCP</span> 由 FastAPI 代為呼叫 hello-mcp</p>
+      <ul class="trace" id="trace"><li style="color:var(--muted)">尚未執行</li></ul>
+    </section>
+  </div>
+</main>
+<footer>資展國際 iSpan ｜ 掌握 Agent Skills 打造專屬 AI 技能包</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+let sessionId = null;
+let totalIn = 0, totalOut = 0;
+
+// ── 狀態列：Skill ID、MCP 工具 ──
+async function loadStatus(){
+  try{
+    const s = await (await fetch('/api/status')).json();
+    const p = [];
+    p.push(s.skill_id ? `<span class="pill">SKILL_ID <b>${esc(s.skill_id.slice(0,14))}…</b></span>`
+                      : `<span class="pill bad">尚未設定 SKILL_ID（先 ant apply）</span>`);
+    p.push(`<span class="pill">模型 <b>${esc(s.model)}</b></span>`);
+    p.push(s.mcp.ok ? `<span class="pill">hello-mcp <b>已連線</b>：${s.mcp.tools.map(esc).join('、')}</span>`
+                    : `<span class="pill bad">hello-mcp 未連線</span>`);
+    $('pills').innerHTML = p.join('');
+  }catch(e){ $('pills').innerHTML = '<span class="pill bad">後端未啟動</span>'; }
+}
+
+async function loadOutbox(){
+  const o = await (await fetch('/api/outbox')).json();
+  $('outboxPath').textContent = o.path;
+  $('outbox').textContent = o.content.trim() || '（尚無內容）';
+  $('outbox').scrollTop = $('outbox').scrollHeight;
+}
+
+// ── 表單互動 ──
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => { $('asof').value = c.dataset.d; });
+$('wantPost').onchange = () => { $('postTo').style.display = $('wantPost').checked ? 'block' : 'none'; };
+$('refresh').onclick = loadOutbox;
+
+$('go').onclick = async () => {
+  sessionId = null; totalIn = 0; totalOut = 0;
+  $('result').innerHTML = ''; $('trace').innerHTML = '';
+  const body = {
+    name: $('name').value.trim(),
+    language: $('lang').value,
+    as_of: $('asof').value || null,
+    use_mcp: $('useMcp').checked,
+    post_to: $('wantPost').checked ? ($('postTo').value.trim() || '全體同仁') : null
+  };
+  const data = await call('/api/greet', body, $('go'));
+  if (!data) return;
+  sessionId = data.session_id;
+  render(data, true);
+};
+
+$('ok').onclick = async () => {
+  const data = await call('/api/confirm', {session_id: sessionId, action: 'confirm'}, $('ok'));
+  if (data){ render(data, false); loadOutbox(); }
+};
+$('cancel').onclick = async () => {
+  const data = await call('/api/confirm', {session_id: sessionId, action: 'cancel'}, $('cancel'));
+  if (data) render(data, false);
+};
+
+// ── 呼叫後端，顯示等待秒數 ──
+async function call(url, body, btn){
+  $('error').style.display = 'none';
+  $('confirm').style.display = 'none';
+  $('posted').style.display = 'none';
+  btn.disabled = true;
+  $('status').classList.add('show');
+  const t0 = Date.now();
+  const timer = setInterval(() => {
+    $('statusText').textContent = `Claude 正在執行 Skill…（${Math.round((Date.now()-t0)/1000)} 秒）`;
+  }, 1000);
+  try{
+    const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const data = await res.json();
+    if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail));
+    data._secs = Math.round((Date.now()-t0)/1000);
+    return data;
+  }catch(e){
+    $('error').textContent = '執行失敗：' + e.message; $('error').style.display = 'block';
+    return null;
+  }finally{
+    clearInterval(timer); $('status').classList.remove('show'); btn.disabled = false;
+  }
+}
+
+// ── 顯示結果：卡片、其他文字、確認列、軌跡 ──
+function render(data, fresh){
+  const text = data.text || '';
+  const m = text.match(/━{6,}[\s\S]*?━{6,}/);
+  let html = '';
+  if (fresh && data.prompt) html += `<div class="prompt">送出的指令：${esc(data.prompt)}</div>`;
+  if (m) html += `<div class="greet">${esc(m[0])}</div>`;
+  const rest = (m ? text.replace(m[0], '') : text).replace(/```[a-z]*\s*```/g, '').trim();
+  html += `<div class="extra">${rest ? DOMPurify.sanitize(marked.parse(rest)) : ''}</div>`;
+  if (fresh) $('result').innerHTML = html;
+  else $('result').insertAdjacentHTML('beforeend', `<div class="turn">— 你按了「確認貼出」—</div><div class="extra">${rest ? DOMPurify.sanitize(marked.parse(rest)) : ''}</div>`);
+
+  $('confirm').style.display = data.awaiting_confirm ? 'block' : 'none';
+  $('posted').style.display = data.posted ? 'block' : 'none';
+
+  if (fresh) $('trace').innerHTML = '';
+  else $('trace').insertAdjacentHTML('beforeend', '<li class="turn">— 你按了「確認貼出」—</li>');
+  for (const n of (data.notes || [])) $('trace').insertAdjacentHTML('beforeend', `<li><span class="tag mcp">注意</span><span>${esc(n)}</span></li>`);
+  for (const t of (data.trace || [])){
+    const tag = t.kind === 'mcp' ? '<span class="tag mcp">MCP</span>' : '<span class="tag skill">Skill</span>';
+    const res = t.result ? `<span class="res">→ ${esc(t.result)}</span>` : '';
+    $('trace').insertAdjacentHTML('beforeend', `<li>${tag}<span><code>${esc(t.label)}</code>${res}</span></li>`);
+  }
+  if (!$('trace').children.length) $('trace').innerHTML = '<li style="color:var(--muted)">沒有呼叫任何工具</li>';
+
+  totalIn += data.usage.input_tokens; totalOut += data.usage.output_tokens;
+  $('meta').textContent = `本次 ${data._secs} 秒 ｜ 提供給 Claude 的工具：${(data.tools||[]).join('、') || '—'} ｜ 累計 tokens：輸入 ${totalIn.toLocaleString()}、輸出 ${totalOut.toLocaleString()}`;
+}
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+loadStatus(); loadOutbox();
+</script>
+</body>
+</html>

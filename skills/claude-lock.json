@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "origin": {
+    "base_url": "https://api.anthropic.com",
+    "organization_id": "714a7975-6b37-4009-a55f-57d9c48d324d",
+    "workspace_id": "wrkspc_016jCBvTLBiHpfsTvPtvKYik"
+  },
+  "resources": {
+    "./hello-skills-mcp": {
+      "kind": "skill",      
+      "id": "skill_01EXn2ZVk58rFsDtkFMGVY7H",
+      "version": "skver_01K7w4Nf4yWDrSk5G7yReSqe",
+      "hash": "7cb2262a18d72560a39e1c97c3e39895"
+    }
+  }
+}

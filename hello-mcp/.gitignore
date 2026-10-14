@@ -1,0 +1,4 @@
+cache/
+outbox.md
+__pycache__/
+.venv/
